@@ -1,0 +1,57 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  padding: 40px 20px 0;
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.tabs button {
+  padding: 16px 40px;
+  font-size: 15px;
+  font-weight: 400;
+  font-family: 'Space Mono', monospace;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--gray-500);
+  position: relative;
+  letter-spacing: 0.5px;
+}
+
+.tabs button::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--black);
+  transform: scaleX(0);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabs button:hover {
+  color: var(--black);
+}
+
+.tabs button.active {
+  color: var(--black);
+  font-weight: 600;
+}
+
+.tabs button.active::before {
+  transform: scaleX(1);
+}
+
+.task-content {
+  flex: 1;
+}

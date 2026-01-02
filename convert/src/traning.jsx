@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './traning.css';
 
 export default function TrainingLog() {
   const [entries, setEntries] = useState([
@@ -16,6 +17,10 @@ export default function TrainingLog() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [view, setView] = useState('trainings');
 
+  const sortByDateDesc = (list) => {
+    return [...list].sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!date || !distance) return;
@@ -24,16 +29,38 @@ export default function TrainingLog() {
     if (isNaN(dist) || dist <= 0) return;
 
     setEntries((prev) => {
-      const updated = [...prev];
-      const existingIndex = updated.findIndex((entry) => entry.date === date);
+      const isEditing = editingIndex !== null;
 
-      if (existingIndex !== -1) {
-        updated[existingIndex].distance += dist;
-      } else {
-        updated.push({ date, distance: dist });
+      if (isEditing) {
+        const duplicateIndex = prev.findIndex(
+          (entry, idx) => entry.date === date && idx !== editingIndex
+        );
+
+        if (duplicateIndex !== -1) {
+          const mergedDistance = prev[duplicateIndex].distance + dist;
+          const next = prev
+            .filter((_, idx) => idx !== editingIndex && idx !== duplicateIndex)
+            .concat({ date, distance: mergedDistance });
+          return sortByDateDesc(next);
+        }
+
+        const next = prev.map((entry, idx) => (
+          idx === editingIndex ? { date, distance: dist } : entry
+        ));
+        return sortByDateDesc(next);
       }
 
-      return updated.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const existingIndex = prev.findIndex((entry) => entry.date === date);
+      if (existingIndex !== -1) {
+        const next = prev.map((entry, idx) => (
+          idx === existingIndex
+            ? { ...entry, distance: entry.distance + dist }
+            : entry
+        ));
+        return sortByDateDesc(next);
+      }
+
+      return sortByDateDesc([...prev, { date, distance: dist }]);
     });
 
     setDate('');
@@ -43,6 +70,13 @@ export default function TrainingLog() {
 
   const handleDelete = (index) => {
     setEntries((prev) => prev.filter((_, i) => i !== index));
+    if (editingIndex === index) {
+      setDate('');
+      setDistance('');
+      setEditingIndex(null);
+    } else if (editingIndex !== null && index < editingIndex) {
+      setEditingIndex((prevIndex) => (prevIndex === null ? null : prevIndex - 1));
+    }
   };
 
   const handleEdit = (index) => {
@@ -57,24 +91,18 @@ export default function TrainingLog() {
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <div style={styles.viewTabs}>
+    <div className="tl">
+      <div className="tl__container">
+        <div className="tl__header">
+          <div className="tl__view-tabs">
             <button
-              style={{
-                ...styles.viewTab,
-                ...(view === 'trainings' ? styles.viewTabActive : {})
-              }}
+              className={view === 'trainings' ? 'tl__view-tab tl__view-tab--active' : 'tl__view-tab'}
               onClick={() => setView('trainings')}
             >
               Тренировки
             </button>
             <button
-              style={{
-                ...styles.viewTab,
-                ...(view === 'walks' ? styles.viewTabActive : {})
-              }}
+              className={view === 'walks' ? 'tl__view-tab tl__view-tab--active' : 'tl__view-tab'}
               onClick={() => setView('walks')}
             >
               Прогулки
@@ -82,20 +110,20 @@ export default function TrainingLog() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>Дата</label>
+        <form onSubmit={handleSubmit} className="tl__form">
+          <div className="tl__form-group">
+            <label className="tl__form-label">Дата</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              style={styles.formInput}
+              className="tl__form-input"
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>Км</label>
+          <div className="tl__form-group">
+            <label className="tl__form-label">Км</label>
             <input
               type="number"
               step="0.1"
@@ -104,43 +132,45 @@ export default function TrainingLog() {
               onChange={(e) => setDistance(e.target.value)}
               required
               placeholder="0.0"
-              style={styles.formInput}
+              className="tl__form-input"
             />
           </div>
 
-          <button type="submit" style={styles.submitButton}>
+          <button type="submit" className="tl__submit">
             {editingIndex !== null ? 'Сохранить' : 'Добавить'}
           </button>
         </form>
 
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
+        <div className="tl__table-wrapper">
+          <table className="tl__table">
             <thead>
-              <tr style={styles.tableHeaderRow}>
-                <th style={styles.tableHeader}>Дата</th>
-                <th style={styles.tableHeader}>Дистанция</th>
-                <th style={styles.tableHeaderActions}></th>
+              <tr className="tl__table-header-row">
+                <th className="tl__table-header">Дата</th>
+                <th className="tl__table-header">Дистанция</th>
+                <th className="tl__table-header-actions"></th>
               </tr>
             </thead>
             <tbody>
               {entries.map((entry, index) => (
-                <tr key={index} style={styles.tableRow}>
-                  <td style={styles.tableCell}>
+                <tr key={index} className="tl__table-row">
+                  <td className="tl__table-cell">
                     {new Date(entry.date).toLocaleDateString('ru-RU')}
                   </td>
-                  <td style={styles.tableCellDistance}>
+                  <td className="tl__table-cell-distance">
                     {formatDistance(entry.distance)} км
                   </td>
-                  <td style={styles.tableCellActions}>
+                  <td className="tl__table-cell-actions">
                     <button
-                      style={styles.actionButton}
+                      className="tl__action"
                       onClick={() => handleEdit(index)}
+                      type="button"
                     >
                       ✎
                     </button>
                     <button
-                      style={styles.actionButton}
+                      className="tl__action"
                       onClick={() => handleDelete(index)}
+                      type="button"
                     >
                       ✕
                     </button>
@@ -154,154 +184,3 @@ export default function TrainingLog() {
     </div>
   );
 }
-
-const styles = {
-  wrapper: {
-    minHeight: 'calc(100vh - 80px)',
-    background: 'linear-gradient(180deg, #fafafa 0%, #ffffff 100%)',
-    padding: '60px 20px'
-  },
-  container: {
-    maxWidth: '900px',
-    margin: '0 auto'
-  },
-  header: {
-    marginBottom: '48px'
-  },
-  viewTabs: {
-    display: 'inline-flex',
-    gap: '0',
-    border: '1px solid var(--gray-300)',
-    borderRadius: '2px',
-    overflow: 'hidden'
-  },
-  viewTab: {
-    padding: '12px 28px',
-    fontSize: '13px',
-    fontWeight: '500',
-    fontFamily: "'Space Mono', monospace",
-    background: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    color: 'var(--gray-600)',
-    letterSpacing: '0.5px'
-  },
-  viewTabActive: {
-    background: 'var(--black)',
-    color: 'var(--white)'
-  },
-  form: {
-    display: 'flex',
-    gap: '16px',
-    marginBottom: '48px',
-    padding: '32px',
-    background: 'var(--white)',
-    border: '1px solid var(--gray-300)',
-    borderRadius: '2px',
-    alignItems: 'flex-end'
-  },
-  formGroup: {
-    flex: '1',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  formLabel: {
-    fontSize: '11px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '1.5px',
-    marginBottom: '10px',
-    color: 'var(--gray-600)'
-  },
-  formInput: {
-    padding: '14px 16px',
-    fontSize: '15px',
-    fontFamily: "'Space Mono', monospace",
-    border: '1px solid var(--gray-300)',
-    borderRadius: '2px',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    background: 'var(--white)'
-  },
-  submitButton: {
-    padding: '14px 32px',
-    fontSize: '13px',
-    fontWeight: '600',
-    fontFamily: "'Space Mono', monospace",
-    background: 'var(--black)',
-    color: 'var(--white)',
-    border: 'none',
-    borderRadius: '2px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase'
-  },
-  tableWrapper: {
-    background: 'var(--white)',
-    border: '1px solid var(--gray-300)',
-    borderRadius: '2px',
-    overflow: 'hidden'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
-  },
-  tableHeaderRow: {
-    borderBottom: '1px solid var(--gray-300)'
-  },
-  tableHeader: {
-    padding: '18px 24px',
-    fontSize: '11px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '1.5px',
-    textAlign: 'left',
-    color: 'var(--gray-600)',
-    background: 'var(--gray-50)'
-  },
-  tableHeaderActions: {
-    padding: '18px 24px',
-    fontSize: '11px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '1.5px',
-    textAlign: 'right',
-    color: 'var(--gray-600)',
-    background: 'var(--gray-50)',
-    width: '120px'
-  },
-  tableRow: {
-    borderBottom: '1px solid var(--gray-200)',
-    transition: 'background 0.15s ease'
-  },
-  tableCell: {
-    padding: '18px 24px',
-    fontSize: '15px',
-    fontFamily: "'Space Mono', monospace",
-    color: 'var(--gray-700)'
-  },
-  tableCellDistance: {
-    padding: '18px 24px',
-    fontSize: '15px',
-    fontFamily: "'Space Mono', monospace",
-    fontWeight: '600',
-    color: 'var(--black)'
-  },
-  tableCellActions: {
-    padding: '18px 24px',
-    textAlign: 'right'
-  },
-  actionButton: {
-    padding: '8px 12px',
-    marginLeft: '8px',
-    fontSize: '16px',
-    background: 'transparent',
-    border: '1px solid var(--gray-300)',
-    borderRadius: '2px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    color: 'var(--gray-600)'
-  }
-};

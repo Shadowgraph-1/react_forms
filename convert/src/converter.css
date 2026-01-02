@@ -1,0 +1,96 @@
+.cc {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(180deg, var(--gray-50) 0%, var(--white) 100%);
+}
+
+.cc__preview {
+  width: 100%;
+  max-width: 500px;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  border: 1px solid var(--gray-300);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  background-color: var(--cc-preview-color, #ffffff);
+  transition: background-color 0.3s ease;
+}
+
+.cc__content {
+  width: 100%;
+  max-width: 360px;
+  padding: 40px;
+}
+
+.cc__title {
+  font-size: 42px;
+  font-weight: 300;
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 48px;
+  letter-spacing: -1px;
+  color: var(--cc-text-color, #000000);
+}
+
+.cc__input-group {
+  margin-bottom: 32px;
+}
+
+.cc__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  color: var(--cc-text-color, #000000);
+}
+
+.cc__input {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 24px;
+  font-family: 'Space Mono', monospace;
+  border: 1px solid var(--cc-input-border-color, #e0e0e0);
+  border-radius: 2px;
+  outline: none;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--cc-text-color, #000000);
+  background-color: var(--cc-input-bg-color, #ffffff);
+}
+
+.cc__result {
+  padding: 20px;
+  font-size: 18px;
+  font-family: 'Space Mono', monospace;
+  text-align: center;
+  border: 1px solid var(--cc-result-border-color, #e0e0e0);
+  border-radius: 2px;
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+  color: var(--cc-text-color, #000000);
+}
+
+.cc__error {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 16px;
+  color: var(--cc-text-color, #000000);
+}
+
+.cc__hint {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 32px;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.5px;
+  color: var(--cc-text-color, #000000);
+  opacity: 0.6;
+}

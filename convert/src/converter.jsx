@@ -1,37 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import './converter.css';
 
 export default function ColorConverter() {
   const [hex, setHex] = useState('');
-  const [rgb, setRgb] = useState('');
-  const [error, setError] = useState('');
-  const [previewColor, setPreviewColor] = useState('#ffffff');
-
-  useEffect(() => {
-    if (hex.length < 7) {
-      setRgb('');
-      setError('');
-      setPreviewColor('#ffffff');
-      return;
-    }
-
-    if (hex.length === 7) {
-      const isValid = /^#[0-9A-Fa-f]{6}$/.test(hex);
-
-      if (isValid) {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-
-        setRgb(`rgb(${r}, ${g}, ${b})`);
-        setError('');
-        setPreviewColor(hex);
-      } else {
-        setRgb('');
-        setError('Ошибка формата');
-        setPreviewColor('#ffffff');
-      }
-    }
-  }, [hex]);
 
   const handleChange = (e) => {
     let value = e.target.value.toUpperCase();
@@ -43,22 +14,32 @@ export default function ColorConverter() {
     setHex(value);
   };
 
+  const { rgb, error, previewColor } = deriveColorFromHex(hex);
   const textColor = previewColor !== '#ffffff' ? getContrastColor(previewColor) : '#000000';
+  const inputBorderColor = error
+    ? 'var(--black)'
+    : (textColor === '#000000' ? 'var(--gray-300)' : 'rgba(255, 255, 255, 0.3)');
+  const inputBackgroundColor = textColor === '#000000' ? 'var(--white)' : 'rgba(0, 0, 0, 0.1)';
+  const resultBorderColor = textColor === '#000000' ? 'var(--gray-300)' : 'rgba(255, 255, 255, 0.3)';
+
+  const cssVars = {
+    '--cc-preview-color': previewColor,
+    '--cc-text-color': textColor,
+    '--cc-input-border-color': inputBorderColor,
+    '--cc-input-bg-color': inputBackgroundColor,
+    '--cc-result-border-color': resultBorderColor,
+  };
 
   return (
-    <div style={styles.container}>
-      <div style={{
-        ...styles.preview,
-        backgroundColor: previewColor,
-        transition: 'background-color 0.3s ease'
-      }}>
-        <div style={styles.content}>
-          <h1 style={{ ...styles.title, color: textColor }}>
+    <div className="cc" style={cssVars}>
+      <div className="cc__preview">
+        <div className="cc__content">
+          <h1 className="cc__title">
             HEX → RGB
           </h1>
 
-          <div style={styles.inputGroup}>
-            <label style={{ ...styles.label, color: textColor }}>
+          <div className="cc__input-group">
+            <label className="cc__label">
               Цвет
             </label>
             <input
@@ -67,38 +48,46 @@ export default function ColorConverter() {
               onChange={handleChange}
               placeholder="#000000"
               maxLength={7}
-              style={{
-                ...styles.input,
-                borderColor: error ? '#000' : (textColor === '#000000' ? '#e0e0e0' : 'rgba(255, 255, 255, 0.3)'),
-                color: textColor,
-                backgroundColor: textColor === '#000000' ? '#ffffff' : 'rgba(0, 0, 0, 0.1)'
-              }}
+              className="cc__input"
             />
           </div>
 
           {rgb && (
-            <div style={{
-              ...styles.result,
-              color: textColor,
-              borderColor: textColor === '#000000' ? '#e0e0e0' : 'rgba(255, 255, 255, 0.3)'
-            }}>
+            <div className="cc__result">
               {rgb}
             </div>
           )}
 
           {error && (
-            <div style={{ ...styles.error, color: textColor }}>
+            <div className="cc__error">
               {error}
             </div>
           )}
 
-          <p style={{ ...styles.hint, color: textColor, opacity: 0.6 }}>
+          <p className="cc__hint">
             Формат: #RRGGBB
           </p>
         </div>
       </div>
     </div>
   );
+}
+
+function deriveColorFromHex(hex) {
+  if (hex.length !== 7) {
+    return { rgb: '', error: '', previewColor: '#ffffff' };
+  }
+
+  const isValid = /^#[0-9A-Fa-f]{6}$/.test(hex);
+  if (!isValid) {
+    return { rgb: '', error: 'Ошибка формата', previewColor: '#ffffff' };
+  }
+
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  return { rgb: `rgb(${r}, ${g}, ${b})`, error: '', previewColor: hex };
 }
 
 function getContrastColor(hexColor) {
@@ -108,83 +97,3 @@ function getContrastColor(hexColor) {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? '#000000' : '#ffffff';
 }
-
-const styles = {
-  container: {
-    minHeight: 'calc(100vh - 80px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-    background: 'linear-gradient(180deg, #fafafa 0%, #ffffff 100%)'
-  },
-  preview: {
-    width: '100%',
-    maxWidth: '500px',
-    minHeight: '500px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '2px',
-    border: '1px solid #e0e0e0',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08)'
-  },
-  content: {
-    width: '100%',
-    maxWidth: '360px',
-    padding: '40px'
-  },
-  title: {
-    fontSize: '42px',
-    fontWeight: '300',
-    fontFamily: "'Space Mono', monospace",
-    marginBottom: '48px',
-    letterSpacing: '-1px'
-  },
-  inputGroup: {
-    marginBottom: '32px'
-  },
-  label: {
-    display: 'block',
-    fontSize: '11px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '1.5px',
-    marginBottom: '12px'
-  },
-  input: {
-    width: '100%',
-    padding: '16px 20px',
-    fontSize: '24px',
-    fontFamily: "'Space Mono', monospace",
-    border: '1px solid',
-    borderRadius: '2px',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    textTransform: 'uppercase',
-    letterSpacing: '1px'
-  },
-  result: {
-    padding: '20px',
-    fontSize: '18px',
-    fontFamily: "'Space Mono', monospace",
-    textAlign: 'center',
-    border: '1px solid',
-    borderRadius: '2px',
-    marginBottom: '24px',
-    letterSpacing: '0.5px'
-  },
-  error: {
-    fontSize: '13px',
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: '16px'
-  },
-  hint: {
-    fontSize: '12px',
-    textAlign: 'center',
-    marginTop: '32px',
-    fontFamily: "'Space Mono', monospace",
-    letterSpacing: '0.5px'
-  }
-};
